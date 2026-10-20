@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>God Jul</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600&family=Mulish:wght@400;600&display=swap">
+<style>
+:root{--night:#0f1b3d;--deep:#17285a;--snow:#f5f7fb;--gold:#f2b84b;--berry:#b3202f;
+--serif:'Fraunces',Georgia,serif;--sans:'Mulish',system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(120% 90% at 50% 0%,var(--deep),var(--night));color:var(--snow);font-family:var(--sans);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;overflow-x:hidden}
+canvas{position:fixed;inset:0;pointer-events:none}
+main{position:relative;text-align:center;max-width:520px;width:100%}
+.window{width:150px;height:190px;margin:0 auto 28px;display:block}
+h1{font-family:var(--serif);font-style:italic;font-weight:600;font-size:clamp(4rem,18vw,7.5rem);line-height:.95;margin:0;letter-spacing:-.02em}
+.msg{font-size:1.1rem;line-height:1.6;margin:22px auto 0;max-width:34ch;color:#dfe5f3}
+.sig{font-family:var(--serif);font-style:italic;font-size:1.3rem;margin-top:18px;color:var(--gold)}
+.tools{position:relative;margin-top:44px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+input,button{font:inherit;font-size:.95rem;padding:10px 14px;border-radius:8px;border:1px solid #3a4c85;background:rgba(255,255,255,.06);color:var(--snow)}
+input::placeholder{color:#93a0c6}
+button{background:var(--gold);color:var(--night);font-weight:600;border-color:var(--gold);cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.flame{transform-origin:75px 112px;animation:flick 2.4s ease-in-out infinite}
+@keyframes flick{0%,100%{transform:scale(1,1) rotate(-1deg)}30%{transform:scale(.94,1.08) rotate(1.5deg)}60%{transform:scale(1.03,.95) rotate(-1deg)}}
+.glow{animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.7}}
+@media(prefers-reduced-motion:reduce){.flame,.glow{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+<main>
+  <svg class="window" viewBox="0 0 150 190" role="img" aria-label="Et vindu med et tent lys">
+    <rect x="10" y="10" width="130" height="170" rx="6" fill="#0a1330" stroke="#f5f7fb" stroke-width="6"/>
+    <rect class="glow" x="16" y="16" width="118" height="158" fill="#f2b84b" opacity=".16"/>
+    <path d="M75 16v158M16 95h118" stroke="#f5f7fb" stroke-width="4"/>
+    <rect x="64" y="130" width="22" height="36" rx="2" fill="#f5f7fb"/>
+    <rect x="72" y="118" width="6" height="14" fill="#f5f7fb"/>
+    <g class="flame"><path d="M75 92c9 10 9 18 0 24-9-6-9-14 0-24z" fill="#f2b84b"/><path d="M75 102c4 5 4 9 0 12-4-3-4-7 0-12z" fill="#fff3c9"/></g>
+    <path d="M52 168h46" stroke="#b3202f" stroke-width="5"/>
+  </svg>
+  <h1>God Jul</h1>
+  <p class="msg" id="msg">Ha en fredfull jul, med lys i vinduet og noen å dele det med.</p>
+  <p class="sig" id="sig"></p>
+  <div class="tools">
+    <input id="to" placeholder="Til" aria-label="Til" size="10">
+    <input id="from" placeholder="Fra" aria-label="Fra" size="10">
+    <button id="copy" type="button">Kopier lenke</button>
+  </div>
+</main>
+<script>
+(function(){
+  var p=new URLSearchParams(location.search),to=document.getElementById('to'),fr=document.getElementById('from'),sig=document.getElementById('sig'),btn=document.getElementById('copy');
+  to.value=p.get('to')||'';fr.value=p.get('from')||'';
+  function render(){sig.textContent=(to.value?'Kjære '+to.value+',\u00a0':'')+(fr.value?'hilsen '+fr.value:'');}
+  render();to.oninput=fr.oninput=render;
+  btn.onclick=function(){
+    var u=new URL(location.href.split('?')[0]);
+    if(to.value)u.searchParams.set('to',to.value);
+    if(fr.value)u.searchParams.set('from',fr.value);
+    var done=function(){btn.textContent='Kopiert';setTimeout(function(){btn.textContent='Kopier lenke';},1800);};
+    try{navigator.clipboard.writeText(u.toString()).then(done,function(){prompt('Kopier lenken:',u.toString());});}
+    catch(e){prompt('Kopier lenken:',u.toString());}
+  };
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var c=document.getElementById('snow'),x=c.getContext('2d'),w,h,f=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}
+  size();addEventListener('resize',size);
+  for(var i=0;i<90;i++)f.push({x:Math.random()*2000,y:Math.random()*1200,r:Math.random()*2.4+.6,s:Math.random()*.8+.3,d:Math.random()*6});
+  (function tick(){
+    x.clearRect(0,0,w,h);x.fillStyle='rgba(245,247,251,.85)';
+    f.forEach(function(a){a.y+=a.s;a.d+=.01;a.x+=Math.sin(a.d)*.4;
+      if(a.y>h){a.y=-5;a.x=Math.random()*w;}
+      x.beginPath();x.arc(a.x%w,a.y,a.r,0,6.283);x.fill();});
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
+</body>
+</html>
